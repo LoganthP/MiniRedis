@@ -649,10 +649,7 @@ Setting `MINIREDIS_FAULT` makes the server kill itself at `snapshot_after_rotate
 - Active expiry scans the expiring keys once per second. That is fine up to hundreds of thousands of keys; a sampled or heap-based sweep would scale further.
 - `SCAN` cursors are offsets into a sorted, cached key list, so a key added or removed mid-iteration can shift a page by one item.
 - Snapshots serialize in a thread; a forked snapshot process (as in Redis `BGSAVE`) would remove the remaining write-latency bump.
-
 <img src="assets/divider.svg" width="70%" alt=""/>
-
-**Built by [Loganth P](https://github.com/LoganthP)** · [LinkedIn](https://www.linkedin.com/in/loganth-p-158667280/)
 
 If this project helped you, consider giving it a ⭐
 
