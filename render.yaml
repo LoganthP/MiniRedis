@@ -1,0 +1,26 @@
+# Render Blueprint for the backend (database + API in one container).
+# New → Blueprint → pick this repo. Then set DASHBOARD_PASSWORD in the dashboard.
+services:
+  - type: web
+    name: miniredis-backend
+    runtime: docker
+    dockerfilePath: ./deploy/backend/Dockerfile
+    dockerContext: .
+    plan: starter            # a persistent disk needs a paid plan; see README
+    healthCheckPath: /api/health
+    numInstances: 1          # one database = one instance; never scale this out
+    envVars:
+      - key: DASHBOARD_PASSWORD
+        sync: false          # you are asked for it on first deploy
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: ALLOW_CRASH_DEMO
+        value: "true"
+      - key: ALLOW_DEMO_WORKLOAD
+        value: "true"
+      - key: PUBLIC_READS
+        value: "false"
+    disk:
+      name: miniredis-data
+      mountPath: /data
+      sizeGB: 1

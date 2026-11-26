@@ -307,6 +307,12 @@ async function request<T>(method: string, path: string, body?: unknown, params?:
     throw new ApiError(0, "The dashboard API is not reachable. Is it running?", "API_DOWN");
   }
   const text = await res.text();
+  // A static host (Netlify, Vercel, GitHub Pages…) with no backend answers /api/*
+  // with its own 404 page or with index.html. Say that, instead of a vague error.
+  const ctype = res.headers.get("content-type") ?? "";
+  if (!ctype.includes("application/json") && (res.status === 404 || res.status === 405 || ctype.includes("text/html"))) {
+    throw new ApiError(res.status, "No dashboard API answers at /api on this site — the frontend is deployed without its backend (or the /api proxy is missing).", "API_MISSING");
+  }
   let data: any = null;
   try {
     data = text ? JSON.parse(text) : null;

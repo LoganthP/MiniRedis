@@ -99,8 +99,8 @@ const statusMeta: Record<DbStatus, { label: string; dot: string; text: string }>
   offline: { label: "Offline", dot: "bg-fg-3", text: "text-fg-2" },
 };
 
-export function StatusPill({ status, stale, className }: { status: DbStatus; stale?: boolean; className?: string }) {
-  const m = statusMeta[status] ?? statusMeta.offline;
+export function StatusPill({ status, stale, className, label }: { status: DbStatus; stale?: boolean; className?: string; label?: string }) {
+  const m = { ...(statusMeta[status] ?? statusMeta.offline), ...(label ? { label } : {}) };
   return (
     <span
       className={cx("inline-flex h-7 items-center gap-2 rounded-md border border-line bg-surface px-2.5 text-xs font-medium", stale ? "text-fg-3" : m.text, className)}

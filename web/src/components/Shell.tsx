@@ -1,4 +1,4 @@
-import { AlertOctagon, Home, Loader2, Lock, LogIn, LogOut, Moon, Pause, Play, Sun, Unlock, WifiOff } from "lucide-react";
+import { AlertOctagon, Loader2, Lock, LogIn, LogOut, Moon, Pause, Play, Sun, Unlock, WifiOff } from "lucide-react";
 import { useState, type FormEvent, type ReactNode } from "react";
 import { useApp, useNow } from "../lib/app-context";
 import type { ApiError } from "../lib/api";
@@ -58,8 +58,8 @@ function Logo() {
   );
 }
 
-export function TopNav({ view, onView, onHome }: { view: ViewId; onView: (v: ViewId) => void; onHome?: () => void }) {
-  const { overview, status, stale, session, canWrite, openLogin, logout, live, setLive, lastUpdated } = useApp();
+export function TopNav({ view, onView }: { view: ViewId; onView: (v: ViewId) => void }) {
+  const { overview, status, stale, session, canWrite, openLogin, logout, live, setLive, lastUpdated, apiProblem } = useApp();
   const now = useNow(1000);
   const inst = overview?.instance;
   const ago = lastUpdated ? Math.max(0, Math.round((now - lastUpdated) / 1000)) : null;
@@ -67,14 +67,7 @@ export function TopNav({ view, onView, onHome }: { view: ViewId; onView: (v: Vie
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-canvas/90 backdrop-blur-md">
       <div className="mx-auto flex h-14 max-w-[1400px] items-center gap-3 px-4 sm:px-6">
-        <a
-          href="/app#/overview"
-          onClick={(e) => {
-            e.preventDefault();
-            onView("overview");
-          }}
-          className="flex items-center gap-2.5"
-        >
+        <a href="#/overview" onClick={() => onView("overview")} className="flex items-center gap-2.5">
           <Logo />
           <span className="text-[15px] font-semibold tracking-tight">MiniRedis</span>
           <span className="hidden rounded border border-line px-1.5 font-mono text-[10px] text-fg-3 sm:inline">v{String(overview?.server?.miniredis_version ?? "1.0.0")}</span>
@@ -106,20 +99,6 @@ export function TopNav({ view, onView, onHome }: { view: ViewId; onView: (v: Vie
         </nav>
 
         <div className="ml-auto flex items-center gap-2">
-          <a
-            href="/"
-            onClick={(e) => {
-              if (onHome) {
-                e.preventDefault();
-                onHome();
-              }
-            }}
-            className="inline-flex size-7 items-center justify-center rounded-md border border-line bg-surface text-fg-2 hover:text-fg"
-            aria-label="Landing page"
-            title="Landing page"
-          >
-            <Home className="size-3.5" />
-          </a>
           <ThemeToggle />
           <button
             onClick={() => setLive(!live)}
@@ -134,7 +113,7 @@ export function TopNav({ view, onView, onHome }: { view: ViewId; onView: (v: Vie
             <span className="hidden sm:inline">{live ? "Live" : "Paused"}</span>
             {ago !== null && <span className="num hidden text-fg-3 lg:inline">{live ? `${Math.min(ago, 99)}s` : `${ago}s ago`}</span>}
           </button>
-          <StatusPill status={status} stale={stale} />
+          <StatusPill status={status} stale={stale} label={apiProblem === "missing" ? "No backend" : apiProblem === "down" ? "API down" : undefined} />
           {session?.auth_required &&
             (canWrite ? (
               <Button size="sm" variant="ghost" onClick={logout} icon={<LogOut />} title="Sign out">
@@ -170,11 +149,8 @@ export function TopNav({ view, onView, onHome }: { view: ViewId; onView: (v: Vie
 function TabLink({ id, active, onView, children, className }: { id: ViewId; active: boolean; onView: (v: ViewId) => void; children: ReactNode; className?: string }) {
   return (
     <a
-      href={`/app#/${id}`}
-      onClick={(e) => {
-        e.preventDefault();
-        onView(id);
-      }}
+      href={`#/${id}`}
+      onClick={() => onView(id)}
       aria-current={active ? "page" : undefined}
       className={cx(
         "relative flex items-center px-3 text-[13px] font-medium transition-colors",
@@ -189,16 +165,29 @@ function TabLink({ id, active, onView, children, className }: { id: ViewId; acti
 }
 
 function StatusBanner() {
-  const { overview, apiDown, live, stale, lastUpdated } = useApp();
+  const { overview, apiDown, apiProblem, everConnected, live, stale, lastUpdated } = useApp();
   const now = useNow(1000);
   if (!overview) return null;
   let content: { icon: ReactNode; text: string; tone: string } | null = null;
   if (!live && stale) {
     content = { icon: <Pause className="size-3.5" />, text: `Polling paused — status and data shown are from ${Math.round((now - lastUpdated) / 1000)}s ago. Writes stay disabled until a fresh check. Resume Live to refresh.`, tone: "text-warn border-warn/30" };
+  } else if (apiProblem === "missing") {
+    content = {
+      icon: <AlertOctagon className="size-3.5" />,
+      text: "No backend: requests to /api on this site return the host's own page, so nothing here can load. Deploy the backend (deploy/backend) and point this site's /api/* at it — see README › “Frontend on Netlify, backend elsewhere”.",
+      tone: "text-danger border-danger/30",
+    };
   } else if (apiDown) {
-    content = { icon: <WifiOff className="size-3.5" />, text: "Dashboard API is not responding. Retrying…", tone: "text-fg-2 border-line" };
+    content = { icon: <WifiOff className="size-3.5" />, text: "Dashboard API is not responding (it may be starting up or asleep on a free plan). Retrying…", tone: "text-fg-2 border-line" };
   } else if (overview.status === "offline") {
-    content = { icon: <WifiOff className="size-3.5" />, text: "Database unreachable. Reconnecting automatically — after a crash the supervisor restarts it.", tone: "text-fg-2 border-line" };
+    const reason = (overview as { reason?: string }).reason;
+    content = {
+      icon: <WifiOff className="size-3.5" />,
+      text: everConnected
+        ? `Database unreachable. Reconnecting automatically — after a crash the supervisor restarts it.${reason ? ` (${reason})` : ""}`
+        : `The API is up but cannot reach the database${reason ? `: ${reason}` : ""}. Check that the database is running and the API's DB_HOST / DB_PORT point to it.`,
+      tone: everConnected ? "text-fg-2 border-line" : "text-danger border-danger/30",
+    };
   } else if (overview.status === "recovering" || overview.status === "starting") {
     content = { icon: <Loader2 className="size-3.5 animate-spin" />, text: "Recovering: loading snapshot and replaying the append-only log. Commands resume when it finishes.", tone: "text-warn border-warn/30" };
   } else if (overview.status === "degraded") {

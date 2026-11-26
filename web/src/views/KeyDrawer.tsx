@@ -227,10 +227,7 @@ export function KeyDrawer({ open, keyName, onClose, onChanged }: { open: boolean
       onChanged();
       onClose();
     } catch (e) {
-      const msg = (e as Error).message;
-      setError(msg);
-      setConfirmDelete(false);
-      toast("error", msg);
+      setError((e as Error).message);
     } finally {
       setSaving(false);
     }

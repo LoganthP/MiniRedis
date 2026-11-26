@@ -421,9 +421,9 @@ export function KeysView() {
             </p>
             {pattern === "*" && (
               <div className="mt-5 flex gap-2">
-                <Button variant="secondary" onClick={seed} loading={seeding} disabled={!ready} icon={<Sparkles />}>Load sample data</Button>
-                <Button variant="secondary" onClick={openImport} disabled={!ready} icon={<FileUp />}>Import dataset</Button>
-                <Button variant="primary" onClick={openNew} disabled={!ready} icon={<Plus />}>New key</Button>
+                <Button variant="secondary" onClick={seed} icon={<Sparkles />}>Load sample data</Button>
+                <Button variant="secondary" onClick={openImport} icon={<FileUp />}>Import dataset</Button>
+                <Button variant="primary" onClick={openNew} icon={<Plus />}>New key</Button>
               </div>
             )}
           </div>

@@ -25,6 +25,10 @@ interface AppState {
   /** Last successful check is older than expected (paused, or checks failing). */
   stale: boolean;
   apiDown: boolean;
+  /** "missing": /api returns a static-host page (no backend deployed / no proxy); "down": API not answering */
+  apiProblem: "missing" | "down" | null;
+  /** true once the database has answered "ready" in this browser session */
+  everConnected: boolean;
   refreshOverview: () => Promise<Overview | null>;
   live: boolean;
   setLive: (v: boolean) => void;
@@ -51,6 +55,8 @@ const READY_FRESH_MS = 6000;
 export function AppProvider({ children }: { children: ReactNode }) {
   const [overview, setOverview] = useState<Overview | null>(null);
   const [apiDown, setApiDown] = useState(false);
+  const [apiProblem, setApiProblem] = useState<"missing" | "down" | null>(null);
+  const [everConnected, setEverConnected] = useState(false);
   const [session, setSession] = useState<Session | null>(null);
   const [loginOpen, setLoginOpen] = useState(false);
   const [loginReason, setLoginReason] = useState<string | null>(null);
@@ -85,12 +91,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const o = await api.overview();
       setOverview(o);
       setApiDown(false);
+      setApiProblem(null);
+      if (o.status === "ready") setEverConnected(true);
       setLastUpdated(Date.now());
       setNow(Date.now());
       return o;
     } catch (e) {
-      const down = e instanceof ApiError && (e.code === "API_DOWN" || e.status >= 500);
+      const missing = e instanceof ApiError && e.code === "API_MISSING";
+      const down = e instanceof ApiError && (missing || e.code === "API_DOWN" || e.status >= 500);
       setApiDown(down);
+      setApiProblem(missing ? "missing" : down ? "down" : null);
       // A failed check never leaves a green "Ready" on screen.
       setOverview((prev) => ({ ...(prev ?? { checked_at: Date.now() / 1000 }), reachable: false, status: "offline" }) as Overview);
       setLastUpdated(Date.now());
@@ -186,6 +196,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         isReady,
         stale,
         apiDown,
+        apiProblem,
+        everConnected,
         refreshOverview,
         live,
         setLive,

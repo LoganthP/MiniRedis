@@ -48,7 +48,6 @@ export function ImportDrawer({ open, onClose, onImported }: { open: boolean; onC
   const [planError, setPlanError] = useState("");
   const [job, setJob] = useState<ImportJob | null>(null);
   const [starting, setStarting] = useState(false);
-  const [cancelling, setCancelling] = useState(false);
   const [dragging, setDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<AbortController | null>(null);
@@ -165,15 +164,7 @@ export function ImportDrawer({ open, onClose, onImported }: { open: boolean; onC
   };
 
   const cancel = async () => {
-    if (!job || cancelling) return;
-    setCancelling(true);
-    try {
-      setJob(await api.importCancel(job.id));
-    } catch (e) {
-      toast("error", (e as Error).message);
-    } finally {
-      setCancelling(false);
-    }
+    if (job) setJob(await api.importCancel(job.id));
   };
 
   const close = () => {
@@ -201,7 +192,7 @@ export function ImportDrawer({ open, onClose, onImported }: { open: boolean; onC
     ) : phase === "running" ? (
       <>
         <span className="mr-auto text-xs text-fg-3">Writing in batches of 500 with durable (fsync’d) SETs.</span>
-        <Button variant="danger" onClick={cancel} loading={cancelling} icon={<X />}>Cancel import</Button>
+        <Button variant="danger" onClick={cancel} icon={<X />}>Cancel import</Button>
       </>
     ) : phase === "finished" && job ? (
       <>

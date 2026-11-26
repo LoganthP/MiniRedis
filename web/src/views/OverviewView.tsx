@@ -169,8 +169,6 @@ export function OverviewView() {
       setBusy(true);
       try {
         setWl(await api.workloadStop());
-      } catch (e) {
-        toast("error", (e as Error).message);
       } finally {
         setBusy(false);
       }
@@ -301,7 +299,7 @@ export function OverviewView() {
             <span>first request after <b className="num">{formatMs(exp.report.first_success_ms)}</b></span>
             {exp.report.load && <span>acked writes <b className="num">{exp.report.load.recovered.toLocaleString()} / {exp.report.load.acked.toLocaleString()}</b> recovered</span>}
             {exp.report.workload && <span>app: <b className="num">{exp.report.workload.served_by_fallback}</b> via fallback, <b className="num">{exp.report.workload.failed}</b> failed</span>}
-            <a href="/app#/recovery" className="ml-auto inline-flex items-center gap-1 text-fg-2 hover:text-fg">Full report <ArrowRight className="size-3" /></a>
+            <a href="#/recovery" className="ml-auto inline-flex items-center gap-1 text-fg-2 hover:text-fg">Full report <ArrowRight className="size-3" /></a>
           </div>
         )}
       </Panel>
@@ -502,7 +500,7 @@ export function OverviewView() {
           icon={<ShieldCheck />}
           title="Durability & restore history"
           meta="Most recent crash tests and backup restore checks"
-          right={<a href="/app#/recovery" className="inline-flex items-center gap-1 text-xs text-fg-2 hover:text-fg">Compare & export <ArrowRight className="size-3" /></a>}
+          right={<a href="#/recovery" className="inline-flex items-center gap-1 text-xs text-fg-2 hover:text-fg">Compare & export <ArrowRight className="size-3" /></a>}
         />
         {session && !canRead ? (
           <p className="px-4 py-4 text-xs text-fg-3">Sign in to see saved reports on this instance.</p>
@@ -567,7 +565,7 @@ function DatasetPanel({ datasets, insights }: { datasets: Dataset[]; insights: R
       />
       {datasets.length === 0 ? (
         <div className="px-4 py-6 text-center text-xs text-fg-3">
-          No imported datasets yet. <a href="/app#/keys" className="text-fg-2 underline-offset-2 hover:underline">Open Keys → Import dataset</a> and try the synthetic shop ZIP.
+          No imported datasets yet. <a href="#/keys" className="text-fg-2 underline-offset-2 hover:underline">Open Keys → Import dataset</a> and try the synthetic shop ZIP.
         </div>
       ) : (
         <div className="grid divide-y divide-line xl:grid-cols-2 xl:divide-x xl:divide-y-0">
