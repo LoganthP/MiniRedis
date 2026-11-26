@@ -3,7 +3,7 @@ import { motion } from "motion/react";
 import { Button, Panel, ease } from "../../../components/ui";
 import { BrandLogo } from "./LandingNavbar";
 
-const GITHUB_URL = "https://github.com/Loganth/MiniRedis";
+const GITHUB_URL = "https://github.com/LoganthP/MiniRedis";
 const LINKEDIN_URL = "https://www.linkedin.com";
 
 function GithubIcon() {

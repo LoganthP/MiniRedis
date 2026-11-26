@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { Overview } from "../../../lib/api";
 import { Button, Panel, StatusPill, Tag, cx, ease } from "../../../components/ui";
 
-const GITHUB_URL = "https://github.com/Loganth/MiniRedis";
+const GITHUB_URL = "https://github.com/LoganthP/MiniRedis";
 
 interface TerminalStep {
   cmd: string;
