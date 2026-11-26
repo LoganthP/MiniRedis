@@ -1,0 +1,25 @@
+# The deployable site is the Vite + React dashboard in web/.
+# The Python services (server/, api/) are not part of the Netlify build.
+[build]
+  base = "web"
+  # Install from the lockfile first (including devDependencies such as
+  # typescript and vite) so the build works even when dependencies
+  # haven't been pre-installed in web/.
+  command = "npm ci --include=dev && npm run build"
+  publish = "dist"
+
+[build.environment]
+  # Vite 8 requires Node ^20.19 || >=22.12; matches CI and web/Dockerfile.
+  NODE_VERSION = "22"
+
+# The dashboard is served at /app (client-side routing), so serve index.html there.
+# Only /app is rewritten so that /api/* still returns 404 instead of HTML.
+[[redirects]]
+  from = "/app"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/app/*"
+  to = "/index.html"
+  status = 200
