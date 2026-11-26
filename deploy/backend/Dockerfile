@@ -1,11 +1,13 @@
-# One container that runs BOTH backend processes: the MiniRedis database (under
-# its fork-based supervisor, on 127.0.0.1:6380) and the dashboard API (on $PORT).
-# Use this on hosts that run one web service per app and do not give services a
-# private TCP network (Render, Railway, Fly.io, Koyeb, a single VM...). The React
-# frontend can then live anywhere (Netlify, Vercel) and proxy /api/* to it.
-#
+# Build a single image for the dashboard, API, and database.
 # Build from the repository root:
 #   docker build -f deploy/backend/Dockerfile -t miniredis-backend .
+FROM node:22-bookworm-slim AS dashboard
+WORKDIR /web
+COPY web/package.json web/package-lock.json ./
+RUN npm ci
+COPY web/ ./
+RUN npm run build
+
 FROM python:3.12-slim
 ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
 WORKDIR /app
@@ -13,6 +15,13 @@ COPY api/requirements.txt ./api/requirements.txt
 RUN pip install --no-cache-dir -r api/requirements.txt
 COPY server/miniredis ./server/miniredis
 COPY api/app ./api/app
+COPY --from=dashboard /web/dist /app/dashboard
+
+# Register the dashboard after the API routes, so both share one HTTPS origin.
+RUN printf '%s\n' '' \
+    'from starlette.staticfiles import StaticFiles' \
+    'app.mount("/", StaticFiles(directory="/app/dashboard", html=True), name="dashboard")' \
+    >> /app/api/app/main.py
 COPY deploy/backend/start.sh ./start.sh
 RUN python -m compileall -q /app/server/miniredis /app/api/app \
  && chmod +x /app/start.sh \
