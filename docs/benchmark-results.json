@@ -1,0 +1,194 @@
+{
+  "meta": {
+    "machine": "Linux-6.18.44-fc-v880-x86_64-with-glibc2.39",
+    "python": "3.13.18",
+    "cpus": 2,
+    "clients": 16,
+    "seconds_per_workload": 4.0,
+    "appendfsync": "always"
+  },
+  "results": [
+    {
+      "keys": 10000,
+      "value_bytes": 64,
+      "load_writes_per_sec": 39482,
+      "rss_mb_after_load": 26.7,
+      "read": {
+        "ops_per_sec": 38072,
+        "p50_ms": 0.373,
+        "p95_ms": 0.752,
+        "p99_ms": 1.309,
+        "write_p95_ms": null,
+        "read_p95_ms": 0.752
+      },
+      "read+dashboard": {
+        "ops_per_sec": 39279,
+        "p50_ms": 0.372,
+        "p95_ms": 0.689,
+        "p99_ms": 0.925,
+        "write_p95_ms": null,
+        "read_p95_ms": 0.689
+      },
+      "write": {
+        "ops_per_sec": 8606,
+        "p50_ms": 1.682,
+        "p95_ms": 2.785,
+        "p99_ms": 4.692,
+        "write_p95_ms": 2.785,
+        "read_p95_ms": null
+      },
+      "write+dashboard": {
+        "ops_per_sec": 7608,
+        "p50_ms": 1.961,
+        "p95_ms": 3.311,
+        "p99_ms": 4.991,
+        "write_p95_ms": 3.311,
+        "read_p95_ms": null
+      },
+      "mixed": {
+        "ops_per_sec": 20751,
+        "p50_ms": 0.327,
+        "p95_ms": 3.037,
+        "p99_ms": 3.99,
+        "write_p95_ms": 3.97,
+        "read_p95_ms": 0.593
+      },
+      "mixed+dashboard": {
+        "ops_per_sec": 20530,
+        "p50_ms": 0.404,
+        "p95_ms": 2.715,
+        "p99_ms": 3.67,
+        "write_p95_ms": 3.653,
+        "read_p95_ms": 0.658
+      },
+      "write+snapshot/1s": {
+        "ops_per_sec": 7941,
+        "p50_ms": 1.823,
+        "p95_ms": 3.205,
+        "p99_ms": 5.446,
+        "write_p95_ms": 3.205,
+        "read_p95_ms": null,
+        "snapshots_during_run": 4
+      },
+      "write+snapshots nonstop": {
+        "ops_per_sec": 3196,
+        "p50_ms": 3.89,
+        "p95_ms": 10.25,
+        "p99_ms": 12.622,
+        "write_p95_ms": 10.25,
+        "read_p95_ms": null,
+        "snapshots_during_run": 223
+      },
+      "rss_mb_after_workloads": 29.7,
+      "restart_log_replay": {
+        "kill_to_first_get_ms": 95.9,
+        "process_start_to_ready_ms": 86,
+        "recovery_ms": 14.413,
+        "replayed_ops": 32,
+        "snapshot_keys": 10000
+      },
+      "restart_snapshot": {
+        "kill_to_first_get_ms": 81.8,
+        "process_start_to_ready_ms": 82,
+        "recovery_ms": 10.164,
+        "replayed_ops": 0,
+        "snapshot_keys": 10000
+      },
+      "crash_under_load": {
+        "acked_writes": 12340,
+        "lost_after_restart": 0
+      }
+    },
+    {
+      "keys": 100000,
+      "value_bytes": 64,
+      "load_writes_per_sec": 34465,
+      "rss_mb_after_load": 70.7,
+      "read": {
+        "ops_per_sec": 38593,
+        "p50_ms": 0.375,
+        "p95_ms": 0.669,
+        "p99_ms": 1.165,
+        "write_p95_ms": null,
+        "read_p95_ms": 0.669
+      },
+      "read+dashboard": {
+        "ops_per_sec": 38247,
+        "p50_ms": 0.373,
+        "p95_ms": 0.711,
+        "p99_ms": 1.095,
+        "write_p95_ms": null,
+        "read_p95_ms": 0.711
+      },
+      "write": {
+        "ops_per_sec": 7347,
+        "p50_ms": 2.016,
+        "p95_ms": 3.459,
+        "p99_ms": 5.301,
+        "write_p95_ms": 3.459,
+        "read_p95_ms": null
+      },
+      "write+dashboard": {
+        "ops_per_sec": 7313,
+        "p50_ms": 2.0,
+        "p95_ms": 3.411,
+        "p99_ms": 5.541,
+        "write_p95_ms": 3.411,
+        "read_p95_ms": null
+      },
+      "mixed": {
+        "ops_per_sec": 18821,
+        "p50_ms": 0.406,
+        "p95_ms": 3.113,
+        "p99_ms": 4.408,
+        "write_p95_ms": 4.349,
+        "read_p95_ms": 0.719
+      },
+      "mixed+dashboard": {
+        "ops_per_sec": 20559,
+        "p50_ms": 0.321,
+        "p95_ms": 2.889,
+        "p99_ms": 4.048,
+        "write_p95_ms": 3.982,
+        "read_p95_ms": 0.661
+      },
+      "write+snapshot/1s": {
+        "ops_per_sec": 6768,
+        "p50_ms": 1.931,
+        "p95_ms": 3.807,
+        "p99_ms": 12.13,
+        "write_p95_ms": 3.807,
+        "read_p95_ms": null,
+        "snapshots_during_run": 4
+      },
+      "write+snapshots nonstop": {
+        "ops_per_sec": 1276,
+        "p50_ms": 10.016,
+        "p95_ms": 31.539,
+        "p99_ms": 45.442,
+        "write_p95_ms": 31.539,
+        "read_p95_ms": null,
+        "snapshots_during_run": 31
+      },
+      "rss_mb_after_workloads": 76.1,
+      "restart_log_replay": {
+        "kill_to_first_get_ms": 197.5,
+        "process_start_to_ready_ms": 166,
+        "recovery_ms": 105.085,
+        "replayed_ops": 61,
+        "snapshot_keys": 100000
+      },
+      "restart_snapshot": {
+        "kill_to_first_get_ms": 207.6,
+        "process_start_to_ready_ms": 202,
+        "recovery_ms": 131.41,
+        "replayed_ops": 0,
+        "snapshot_keys": 100000
+      },
+      "crash_under_load": {
+        "acked_writes": 12789,
+        "lost_after_restart": 0
+      }
+    }
+  ]
+}

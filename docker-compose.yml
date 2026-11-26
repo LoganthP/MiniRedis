@@ -1,0 +1,86 @@
+# MiniRedis: database + dashboard API + web dashboard.
+#
+#   scripts/deploy.sh --profile private     # recommended: generates .env, builds, starts, verifies
+#   # or by hand:
+#   cp deploy/private.env .env  &&  docker compose up -d --build
+#
+# Dashboard: http://<host>:${WEB_PORT:-8081}
+# The database TCP port is NOT published: only the api service reaches it on
+# the private compose network. With DOMAIN set, `--profile https` adds Caddy
+# with automatic Let's Encrypt certificates on ports 80/443.
+name: miniredis
+
+services:
+  db:
+    build: ./server
+    restart: unless-stopped        # outer safety net; the in-container supervisor restarts crashes in ~1 ms
+    environment:
+      MINIREDIS_APPENDFSYNC: ${APPENDFSYNC:-always}
+      MINIREDIS_SNAPSHOT_EVERY_OPS: ${SNAPSHOT_EVERY_OPS:-10000}
+      MINIREDIS_SNAPSHOT_EVERY_SECONDS: ${SNAPSHOT_EVERY_SECONDS:-300}
+      MINIREDIS_REQUIREPASS: ${DB_PASSWORD:-}
+      MINIREDIS_ENABLE_DEBUG_COMMAND: ${ALLOW_CRASH_DEMO:-false}
+    volumes:
+      - redis-data:/data
+    stop_grace_period: 30s
+    networks: [internal]
+
+  api:
+    build: ./api
+    restart: unless-stopped
+    environment:
+      DB_HOST: db
+      DB_PORT: "6380"
+      DB_PASSWORD: ${DB_PASSWORD:-}
+      DASHBOARD_PASSWORD: ${DASHBOARD_PASSWORD:?set DASHBOARD_PASSWORD in .env (scripts/deploy.sh generates one)}
+      SESSION_SECRET: ${SESSION_SECRET:-}
+      ALLOW_CRASH_DEMO: ${ALLOW_CRASH_DEMO:-false}
+      INSTANCE_NAME: ${INSTANCE_NAME:-miniredis}
+      PUBLIC_READS: ${PUBLIC_READS:-false}
+      CLI_PREFIX: ${CLI_PREFIX:-docker compose exec db python -m miniredis.cli}
+      # Empty = follow ALLOW_CRASH_DEMO (on for the demo profile, off for private data).
+      ALLOW_DEMO_WORKLOAD: ${ALLOW_DEMO_WORKLOAD:-}
+      IMPORT_MAX_UPLOAD_MB: ${IMPORT_MAX_UPLOAD_MB:-200}
+      IMPORT_MAX_UNCOMPRESSED_MB: ${IMPORT_MAX_UNCOMPRESSED_MB:-1024}
+      IMPORT_MAX_RECORDS: ${IMPORT_MAX_RECORDS:-500000}
+      REPORTS_DIR: /reports
+    volumes:
+      - api-reports:/reports          # saved crash-lab reports survive API restarts
+    depends_on:
+      db:
+        condition: service_started   # the dashboard shows "Recovering" while db loads
+    networks: [internal]
+
+  web:
+    build: ./web
+    restart: unless-stopped
+    ports:
+      - "${WEB_BIND:-0.0.0.0}:${WEB_PORT:-8081}:80"
+    depends_on: [api]
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/api/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks: [internal]
+
+  caddy:
+    image: caddy:2-alpine
+    profiles: [https]
+    restart: unless-stopped
+    ports: ["80:80", "443:443"]
+    environment:
+      DOMAIN: ${DOMAIN:-}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+    depends_on: [web]
+    networks: [internal]
+
+volumes:
+  redis-data:
+  api-reports:
+  caddy-data:
+
+networks:
+  internal:

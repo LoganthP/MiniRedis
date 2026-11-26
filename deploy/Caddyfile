@@ -1,0 +1,11 @@
+# HTTPS front door (docker compose --profile https up -d). Needs DOMAIN in .env
+# and DNS pointing at this server; Caddy obtains and renews certificates.
+{$DOMAIN} {
+	encode gzip
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options nosniff
+		Referrer-Policy no-referrer
+	}
+	reverse_proxy web:80
+}

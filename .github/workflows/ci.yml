@@ -1,0 +1,31 @@
+name: ci
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -r api/requirements-dev.txt -r server/requirements-dev.txt
+      - run: cd server && python -m pytest -q
+      - run: cd api && python -m pytest -q
+      - uses: actions/setup-node@v4
+        with: { node-version: "22" }
+      - run: cd web && npm ci && npm run build
+  docker:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build images and start the stack
+        run: |
+          cp deploy/demo.env .env
+          sed -i 's/__GENERATE__/ci-secret/' .env
+          docker compose up -d --build
+      - name: Smoke test (container replacement + reconnect)
+        run: |
+          for i in $(seq 1 60); do docker compose exec -T db python -m miniredis.healthcheck && break; sleep 1; done
+          scripts/smoke-test.sh
+      - if: failure()
+        run: docker compose logs
