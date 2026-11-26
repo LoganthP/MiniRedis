@@ -22,7 +22,9 @@ COPY --from=dashboard /web/dist /app/dashboard
 # because the React app does its own routing.
 COPY deploy/backend/spa.py /app/api/app/spa.py
 RUN printf '%s\n' '' \
+    'from starlette.middleware.gzip import GZipMiddleware' \
     'from .spa import SPAStaticFiles' \
+    'app.add_middleware(GZipMiddleware, minimum_size=500, compresslevel=6)' \
     'app.mount("/", SPAStaticFiles(directory="/app/dashboard", html=True), name="dashboard")' \
     >> /app/api/app/main.py
 COPY deploy/backend/start.sh ./start.sh

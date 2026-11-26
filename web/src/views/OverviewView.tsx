@@ -76,9 +76,12 @@ export function OverviewView() {
 
   const loadWl = useCallback(async () => {
     try {
-      setWl(await api.workload(300));
+      const w = await api.workload(300);
+      setWl(w);
+      return w;
     } catch {
       /* API down */
+      return null;
     }
   }, []);
   const loadHist = useCallback(async () => {
@@ -102,13 +105,24 @@ export function OverviewView() {
   }, []);
 
   useEffect(() => {
-    loadWl();
     loadHist();
-    if (!live) return;
-    const a = window.setInterval(loadWl, 1000);
+    if (!live) {
+      loadWl();
+      return;
+    }
+    // Traffic status refreshes every second while a run is active, and every 4 s when idle.
+    let stop = false;
+    let t: number | undefined;
+    const tick = async () => {
+      const w = await loadWl();
+      if (stop) return;
+      t = window.setTimeout(tick, w?.running ? 1000 : 4000);
+    };
+    tick();
     const b = window.setInterval(loadHist, 5000);
     return () => {
-      window.clearInterval(a);
+      stop = true;
+      window.clearTimeout(t);
       window.clearInterval(b);
     };
   }, [live, loadWl, loadHist]);

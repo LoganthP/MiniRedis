@@ -1,14 +1,14 @@
 import { AnimatePresence, motion } from "motion/react";
-import { useCallback, useEffect, useState } from "react";
+import { Suspense, lazy, useCallback, useEffect, useState } from "react";
 import { AppProvider } from "./lib/app-context";
 import { Background, TopNav, type ViewId } from "./components/Shell";
 import { ToastProvider } from "./components/ui";
-import { KeysView } from "./views/KeysView";
-import { CommandsView } from "./views/CommandsView";
-import { RecoveryView } from "./views/RecoveryView";
 import { OverviewView } from "./views/OverviewView";
 import { ExperimentProvider } from "./lib/experiment";
-import { LandingPage } from "./pages/Landing/LandingPage";
+const KeysView = lazy(() => import("./views/KeysView").then((m) => ({ default: m.KeysView })));
+const CommandsView = lazy(() => import("./views/CommandsView").then((m) => ({ default: m.CommandsView })));
+const RecoveryView = lazy(() => import("./views/RecoveryView").then((m) => ({ default: m.RecoveryView })));
+const LandingPage = lazy(() => import("./pages/Landing/LandingPage").then((m) => ({ default: m.LandingPage })));
 
 const VIEWS: ViewId[] = ["overview", "keys", "commands", "recovery"];
 
@@ -64,7 +64,11 @@ export default function App() {
   }, []);
 
   if (!loc.isApp) {
-    return <LandingPage onNavigate={navigate} />;
+    return (
+      <Suspense fallback={null}>
+        <LandingPage onNavigate={navigate} />
+      </Suspense>
+    );
   }
 
   return (
@@ -82,10 +86,12 @@ export default function App() {
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.15 }}
               >
-                {loc.view === "overview" && <OverviewView />}
-                {loc.view === "keys" && <KeysView />}
-                {loc.view === "commands" && <CommandsView />}
-                {loc.view === "recovery" && <RecoveryView />}
+                <Suspense fallback={null}>
+                  {loc.view === "overview" && <OverviewView />}
+                  {loc.view === "keys" && <KeysView />}
+                  {loc.view === "commands" && <CommandsView />}
+                  {loc.view === "recovery" && <RecoveryView />}
+                </Suspense>
               </motion.div>
             </AnimatePresence>
           </main>

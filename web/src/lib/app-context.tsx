@@ -61,13 +61,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [loginOpen, setLoginOpen] = useState(false);
   const [loginReason, setLoginReason] = useState<string | null>(null);
   const pendingAction = useRef<(() => void) | null>(null);
-  const [live, setLiveState] = useState<boolean>(() => {
+  const [liveSetting, setLiveState] = useState<boolean>(() => {
     try {
       return localStorage.getItem("miniredis.live") !== "0";
     } catch {
       return true;
     }
   });
+  // Background tabs do not poll: it only burns the server's CPU and the user's bandwidth.
+  const [visible, setVisible] = useState(() => typeof document === "undefined" || !document.hidden);
+  useEffect(() => {
+    const h = () => setVisible(!document.hidden);
+    document.addEventListener("visibilitychange", h);
+    return () => document.removeEventListener("visibilitychange", h);
+  }, []);
+  const live = liveSetting && visible;
   const [lastUpdated, setLastUpdated] = useState(0);
   const [now, setNow] = useState(Date.now());
   const timer = useRef<number | undefined>(undefined);
