@@ -18,9 +18,12 @@ COPY api/app ./api/app
 COPY --from=dashboard /web/dist /app/dashboard
 
 # Register the dashboard after the API routes, so both share one HTTPS origin.
+# Unknown paths (the landing page at /, the dashboard at /app) get index.html,
+# because the React app does its own routing.
+COPY deploy/backend/spa.py /app/api/app/spa.py
 RUN printf '%s\n' '' \
-    'from starlette.staticfiles import StaticFiles' \
-    'app.mount("/", StaticFiles(directory="/app/dashboard", html=True), name="dashboard")' \
+    'from .spa import SPAStaticFiles' \
+    'app.mount("/", SPAStaticFiles(directory="/app/dashboard", html=True), name="dashboard")' \
     >> /app/api/app/main.py
 COPY deploy/backend/start.sh ./start.sh
 RUN python -m compileall -q /app/server/miniredis /app/api/app \

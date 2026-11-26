@@ -1,4 +1,4 @@
-import { AlertOctagon, Loader2, Lock, LogIn, LogOut, Moon, Pause, Play, Sun, Unlock, WifiOff } from "lucide-react";
+import { AlertOctagon, Home, Loader2, Lock, LogIn, LogOut, Moon, Pause, Play, Sun, Unlock, WifiOff } from "lucide-react";
 import { useState, type FormEvent, type ReactNode } from "react";
 import { useApp, useNow } from "../lib/app-context";
 import type { ApiError } from "../lib/api";
@@ -58,7 +58,7 @@ function Logo() {
   );
 }
 
-export function TopNav({ view, onView }: { view: ViewId; onView: (v: ViewId) => void }) {
+export function TopNav({ view, onView, onHome }: { view: ViewId; onView: (v: ViewId) => void; onHome?: () => void }) {
   const { overview, status, stale, session, canWrite, openLogin, logout, live, setLive, lastUpdated, apiProblem } = useApp();
   const now = useNow(1000);
   const inst = overview?.instance;
@@ -67,7 +67,14 @@ export function TopNav({ view, onView }: { view: ViewId; onView: (v: ViewId) => 
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-canvas/90 backdrop-blur-md">
       <div className="mx-auto flex h-14 max-w-[1400px] items-center gap-3 px-4 sm:px-6">
-        <a href="#/overview" onClick={() => onView("overview")} className="flex items-center gap-2.5">
+        <a
+          href="/app#/overview"
+          onClick={(e) => {
+            e.preventDefault();
+            onView("overview");
+          }}
+          className="flex items-center gap-2.5"
+        >
           <Logo />
           <span className="text-[15px] font-semibold tracking-tight">MiniRedis</span>
           <span className="hidden rounded border border-line px-1.5 font-mono text-[10px] text-fg-3 sm:inline">v{String(overview?.server?.miniredis_version ?? "1.0.0")}</span>
@@ -99,6 +106,20 @@ export function TopNav({ view, onView }: { view: ViewId; onView: (v: ViewId) => 
         </nav>
 
         <div className="ml-auto flex items-center gap-2">
+          <a
+            href="/"
+            onClick={(e) => {
+              if (onHome) {
+                e.preventDefault();
+                onHome();
+              }
+            }}
+            className="inline-flex size-7 items-center justify-center rounded-md border border-line bg-surface text-fg-2 hover:text-fg"
+            aria-label="Landing page"
+            title="Landing page"
+          >
+            <Home className="size-3.5" />
+          </a>
           <ThemeToggle />
           <button
             onClick={() => setLive(!live)}
@@ -149,8 +170,11 @@ export function TopNav({ view, onView }: { view: ViewId; onView: (v: ViewId) => 
 function TabLink({ id, active, onView, children, className }: { id: ViewId; active: boolean; onView: (v: ViewId) => void; children: ReactNode; className?: string }) {
   return (
     <a
-      href={`#/${id}`}
-      onClick={() => onView(id)}
+      href={`/app#/${id}`}
+      onClick={(e) => {
+        e.preventDefault();
+        onView(id);
+      }}
       aria-current={active ? "page" : undefined}
       className={cx(
         "relative flex items-center px-3 text-[13px] font-medium transition-colors",

@@ -1,5 +1,6 @@
 # Render Blueprint for the backend (database + API in one container).
-# New → Blueprint → pick this repo. Then set DASHBOARD_PASSWORD in the dashboard.
+# New → Blueprint → pick this repo. DASHBOARD_PASSWORD below is a demo default:
+# change it (here or in the Render dashboard → Environment) for anything public.
 services:
   - type: web
     name: miniredis-backend
@@ -11,7 +12,7 @@ services:
     numInstances: 1          # one database = one instance; never scale this out
     envVars:
       - key: DASHBOARD_PASSWORD
-        sync: false          # you are asked for it on first deploy
+        value: change-me     # demo default; override in the Render dashboard
       - key: SESSION_SECRET
         generateValue: true
       - key: ALLOW_CRASH_DEMO
