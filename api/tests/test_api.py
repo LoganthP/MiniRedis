@@ -196,6 +196,7 @@ def test_private_reads_require_sign_in(dbproc):
             assert getattr(c, method)(url, **kw).status_code == 401, url
         # status stays public; recorded key data is redacted
         h = login(c)
+        assert c.post("/api/snapshot", headers=h).json()["ok"]
         c.put("/api/key", json={"key": "secret:1", "value": "hunter2"}, headers=h)
         dbproc.proc.kill(); dbproc.proc.wait(); dbproc.start()
         ov = c.get("/api/overview").json()
